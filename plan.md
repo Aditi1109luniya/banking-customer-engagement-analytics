@@ -1,7 +1,7 @@
 # Banking Customer Engagement & Deposit Propensity Analytics
 ## End-to-end implementation brief for a GPT-Astra build agent
 
-**Status:** implementation plan, not a completed project. No models have been trained and no performance, sales, or revenue results have been measured.
+**Status:** original implementation specification. The prototype is now built and evaluated. See README.md and reports/model_report.md for measured offline results and verification. No incremental sales or revenue effects have been established.
 
 **Companion:** [Project understanding and interview guide](docs/project_understanding_and_interview_guide.md).
 
