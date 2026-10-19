@@ -1,0 +1,9 @@
+seed = 42
+outreach_fraction = 0.20
+source_rows = 41188
+train_rows = 28831
+validation_rows = 6178
+test_rows = 6179
+forest_estimators = 300
+forest_jobs = 2
+permutation_repeats = 10
