@@ -28,7 +28,7 @@ def test_missing_bundle_is_actionable(monkeypatch, tmp_path: Path):
     assert any("No model is trained" in item.value for item in at.caption)
 
 
-@pytest.mark.parametrize("page", ["Campaign overview", "Model results", "Outreach shortlist", "Scoring sandbox"])
+@pytest.mark.parametrize("page", ["Engagement hub", "Campaign overview", "Model results", "Outreach shortlist", "Scoring sandbox"])
 def test_each_page_renders(page):
     at = demo_app()
     at.sidebar.radio[0].set_value(page).run()
@@ -76,3 +76,32 @@ def test_oversized_upload_and_safe_export():
     result = safe_export(pd.DataFrame([{"record_id": "001", "model_score": .4,
                                         "selected": True, "y": 1, "phone": "not-real"}]))
     assert list(result) == ["record_id", "model_score", "selected"]
+
+
+def test_hub_is_default_and_capacity_preview_is_exploratory():
+    at = demo_app()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Engagement hub"
+    official_lift = next(m.value for m in at.metric if m.label == "Test lift @ 20%")
+    next(s for s in at.slider if s.label == "Preview contact capacity (%)").set_value(35).run()
+    assert not at.exception
+    assert next(m.value for m in at.metric if m.label == "Test lift @ 20%") == official_lift
+    assert any("At 35% capacity" in item.value for item in at.markdown)
+    next(b for b in at.button if b.label == "Open outreach shortlist").click().run()
+    assert not at.exception
+    assert next(s.value for s in at.slider if s.label == "Eligible pool capacity (%)") == 35
+
+
+@pytest.mark.parametrize("button,destination", [
+    ("Open campaign analysis", "Campaign overview"),
+    ("Open model results", "Model results"),
+    ("Open outreach shortlist", "Outreach shortlist"),
+])
+def test_hub_navigation_and_return(button, destination):
+    at = demo_app()
+    next(b for b in at.button if b.label == button).click().run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == destination
+    next(b for b in at.button if b.label == "← Back to engagement hub").click().run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Engagement hub"
