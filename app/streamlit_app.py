@@ -25,14 +25,15 @@ from sklearn.calibration import calibration_curve
 from sklearn.metrics import precision_recall_curve, roc_curve
 
 from bank_engagement.artifacts import load_bundle
-from bank_engagement.constants import DEMO, FEATURES
+from bank_engagement.constants import DEMO, FEATURES, ROOT
 from bank_engagement.database import query_analysis
 from bank_engagement.engagement import simulate_engagement
 from bank_engagement.evaluation import ranked_order
 from bank_engagement.scoring import score_prospects
 
-PAGES = ["Campaign overview", "Model results", "Outreach shortlist", "Scoring sandbox"]
-COLOR = "#12756c"
+PAGES = ["Engagement hub", "Campaign overview", "Model results", "Outreach shortlist", "Scoring sandbox"]
+COLOR = "#b9512b"
+NAVY = "#19364a"
 SOURCE = "https://archive.ics.uci.edu/dataset/222/bank+marketing"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 EXPORT_COLUMNS = [
@@ -60,11 +61,151 @@ def percent(value: float) -> str:
 def plot_layout(fig: go.Figure, *, height: int = 340) -> go.Figure:
     fig.update_layout(
         template="plotly_white", height=height, margin=dict(l=12, r=12, t=25, b=10),
-        font=dict(family="Arial, sans-serif", size=13, color="#334155"),
-        colorway=[COLOR, "#456789", "#c3924c", "#8a6ca8"],
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Arial, sans-serif", size=13, color=NAVY),
+        colorway=[COLOR, NAVY, "#b99b68", "#6c8f91"],
         legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
     )
     return fig
+
+
+def navigate_to(page: str, capacity_percent: int | None = None) -> None:
+    """Button callbacks run before the keyed sidebar widget is rendered again."""
+    st.session_state["workspace"] = page
+    if page == "Outreach shortlist" and capacity_percent is not None:
+        st.session_state["outreach_capacity"] = capacity_percent
+
+
+def engagement_hub(bundle: dict, identity: str) -> None:
+    """Use frozen results and simulated policy, never invented dashboard KPIs."""
+    hero, artwork = st.columns([1.08, 1], gap="large", vertical_alignment="center")
+    with hero:
+        st.markdown('<p class="hub-eyebrow">CUSTOMER ENGAGEMENT · DECISION SUPPORT</p>', unsafe_allow_html=True)
+        st.markdown('<h1 class="hub-title">Better conversations.<br>Smarter prioritisation.</h1>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="hub-intro">Give every limited outreach slot a clear purpose. '
+            'Explore historical campaign patterns, review deposit propensity and build '
+            'a practical shortlist for a needs-based customer conversation.</p>',
+            unsafe_allow_html=True,
+        )
+        st.caption("Independent banking analytics prototype · Public historical data · Simulated engagement")
+        actions = st.columns(2)
+        actions[0].button("Explore analysis →", type="primary", use_container_width=True,
+                          on_click=navigate_to, args=("Campaign overview",), key="hero_campaign")
+        actions[1].button("Plan outreach →", use_container_width=True,
+                          on_click=navigate_to, args=("Outreach shortlist",), key="hero_shortlist")
+    with artwork:
+        hero_path = ROOT / "app/assets/banking_hero.png"
+        if hero_path.exists():
+            st.image(str(hero_path), use_container_width=True)
+            st.caption("Illustrative artwork · No real customers or bank affiliation")
+        else:
+            overview = cached_analysis("overview", "all", str(bundle["db_path"]), identity).iloc[0]
+            subscriptions = int(overview["subscriptions"])
+            observations = int(overview["observations"])
+            fallback = go.Figure(go.Pie(
+                values=[subscriptions, observations - subscriptions],
+                labels=["Recorded subscription", "No recorded subscription"], hole=.76,
+                marker=dict(colors=[COLOR, "#e9e1d4"]), textinfo="none",
+                hovertemplate="%{label}<br>%{value:,} observations<extra></extra>",
+            ))
+            fallback.add_annotation(x=.5, y=.5, text=f"<b>{percent(subscriptions / observations)}</b><br>historical subscription rate",
+                                    showarrow=False, font=dict(size=18, color=NAVY))
+            fallback.update_layout(showlegend=False)
+            st.plotly_chart(plot_layout(fallback, height=300), use_container_width=True, key="hub_hero_chart")
+            st.caption("Full historical dataset · Portuguese telephone campaigns")
+    st.markdown('<div class="hub-rule"></div>', unsafe_allow_html=True)
+    overview = cached_analysis("overview", "all", str(bundle["db_path"]), identity).iloc[0]
+    metrics = pd.DataFrame(bundle["metrics"])
+    champion = metrics.loc[(metrics["split"] == "test") & metrics["champion"].astype(bool)].iloc[0]
+    cards = st.columns([1, 1, 2], gap="large", vertical_alignment="center")
+    cards[0].metric("Historical observations", f"{int(overview['observations']):,}",
+                    help="Full historical dataset; observations are not confirmed unique customers.")
+    cards[1].metric("Test lift @ 20%", f"{float(champion['lift_at_20']):.2f}×",
+                    help="Test precision at 20% divided by the overall test subscription rate.")
+    with cards[2]:
+        st.markdown("**Evidence for a better-informed conversation**")
+        st.caption(
+            "The lift compares the highest-scored fifth with the full historical test pool. "
+            "It measures offline ranking quality, not incremental sales. Explore the model "
+            "results for the full comparison and limitations."
+        )
+    st.markdown("### Your engagement workspace")
+    heading, budget_control = st.columns([1.8, 1], gap="large", vertical_alignment="center")
+    with heading:
+        st.write("Start with the evidence. Follow a chart into the detailed analysis, then review a simulated shortlist.")
+    with budget_control:
+        capacity_percent = st.slider("Preview contact capacity (%)", 1, 50, 20, 1, key="hub_capacity",
+                                     help="Exploratory replay only; official metrics and the frozen validation cutoff do not change.")
+    capacity_fraction = capacity_percent / 100
+    test = bundle["test"]
+    labels = test["y"].astype(str).str.lower().isin(["yes", "1", "true"]).astype(int)
+    selected_count = min(len(test), int(np.ceil(capacity_fraction * len(test))))
+    ordered = ranked_order(test["record_id"], test["model_score"])
+    captured = int(labels.iloc[ordered[:selected_count]].sum())
+    replay_recall = captured / int(labels.sum()) if labels.sum() else 0
+    preview_cards = st.columns(3, gap="medium")
+    with preview_cards[0], st.container(border=True):
+        st.caption("01 / UNDERSTAND THE HISTORY")
+        st.markdown("#### Campaign patterns")
+        st.write("How do recorded subscriptions vary by previous campaign outcome?")
+        frame = cached_analysis("by_poutcome", "all", str(bundle["db_path"]), identity).copy()
+        frame["display_rate"] = frame["subscription_rate"].where(frame["observations"] >= 30)
+        frame = frame.sort_values("display_rate", ascending=True)
+        fig = px.bar(frame, x="display_rate", y="poutcome", orientation="h",
+                     custom_data=["observations", "subscriptions"], color_discrete_sequence=[COLOR],
+                     labels={"display_rate": "Historical subscription rate", "poutcome": ""})
+        fig.update_traces(hovertemplate="%{y}<br>Rate: %{x:.1%}<br>Observations: %{customdata[0]:,}<br>Subscriptions: %{customdata[1]:,}<extra></extra>")
+        fig.update_xaxes(tickformat=".0%", rangemode="tozero")
+        st.plotly_chart(plot_layout(fig, height=250), use_container_width=True, key="hub_campaign_chart")
+        st.caption("Full history · Recorded association, not causality · Rates hidden below 30 observations")
+        st.button("Open campaign analysis", use_container_width=True, on_click=navigate_to,
+                  args=("Campaign overview",), key="hub_open_campaign")
+    with preview_cards[1], st.container(border=True):
+        st.caption("02 / EXAMINE THE MODEL")
+        st.markdown("#### Capacity & capture")
+        st.write(f"At {capacity_percent}% capacity, the historical replay captures {percent(replay_recall)} of test subscriptions.")
+        curves = bundle["curves"]
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=curves["fraction"], y=curves["recall"], name="Champion", mode="lines",
+                                 line=dict(color=COLOR, width=3),
+                                 hovertemplate="Capacity: %{x:.0%}<br>Captured: %{y:.1%}<extra>Champion</extra>"))
+        fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name="Random reference", mode="lines",
+                                 line=dict(color="#9b9a91", dash="dot"), hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=[capacity_fraction], y=[replay_recall], name="Preview budget", mode="markers",
+                                 marker=dict(color=NAVY, size=10), showlegend=False,
+                                 hovertemplate=f"{selected_count:,} selected<br>{captured:,} historical subscriptions<extra>Preview</extra>"))
+        fig.update_layout(xaxis_title="Fraction of test pool contacted", yaxis_title="Test subscriptions captured")
+        fig.update_xaxes(tickformat=".0%", range=[0, 1])
+        fig.update_yaxes(tickformat=".0%", range=[0, 1])
+        st.plotly_chart(plot_layout(fig, height=250), use_container_width=True, key="hub_capacity_chart")
+        st.caption(f"All {len(test):,} test rows · No simulated suppression · Exploration does not tune the model")
+        st.button("Open model results", use_container_width=True, on_click=navigate_to,
+                  args=("Model results",), key="hub_open_model")
+    with preview_cards[2], st.container(border=True):
+        st.caption("03 / PREPARE THE CONVERSATION")
+        st.markdown("#### Simulated outreach")
+        flags = simulate_engagement(test["record_id"].tolist())
+        eligible = (flags["simulated_contact_permission"] & ~flags["simulated_opt_out"] & ~flags["simulated_recent_contact"])
+        eligible_count = int(eligible.sum())
+        simulated_selected = int(np.ceil(capacity_fraction * eligible_count))
+        st.write(f"Review {simulated_selected:,} records at {capacity_percent}% of the simulated eligible pool.")
+        fig = go.Figure(go.Pie(
+            labels=["Simulated eligible", "Simulated suppressed"],
+            values=[eligible_count, len(test) - eligible_count], hole=.72,
+            marker=dict(colors=[NAVY, "#e5d7c7"]), textinfo="none",
+            hovertemplate="%{label}<br>%{value:,} observations (%{percent})<extra></extra>",
+        ))
+        fig.add_annotation(x=.5, y=.5, text=f"<b>{eligible_count:,}</b><br>simulated eligible",
+                           showarrow=False, font=dict(size=16, color=NAVY))
+        fig.update_layout(showlegend=False)
+        st.plotly_chart(plot_layout(fig, height=250), use_container_width=True, key="hub_eligibility_chart")
+        st.caption("Final test replay · Permission, opt-out and cooldown are simulated · Opt-outs always suppress")
+        st.button("Open outreach shortlist", type="primary", use_container_width=True, on_click=navigate_to,
+                  args=("Outreach shortlist", capacity_percent), key="hub_open_shortlist")
+    st.markdown('<div class="hub-rule"></div>', unsafe_allow_html=True)
+    st.markdown("**A score starts a conversation. It does not establish product suitability.**")
+    st.write("Review saving goals, liquidity needs, preferred tenure and willingness to discuss before considering any product.")
 
 
 def dataframe(frame: pd.DataFrame, **kwargs) -> None:
@@ -116,7 +257,7 @@ def campaign_overview(bundle: dict, identity: str) -> None:
     cards[0].metric("Observations", f"{n:,}")
     cards[1].metric("Recorded subscriptions", f"{positives:,}")
     cards[2].metric("Historical subscription rate", percent(float(row["subscription_rate"])))
-    cards[3].metric("Data version", str(bundle["manifest"].get("source_sha256", "unavailable"))[:10])
+    cards[3].metric("Data version", str(bundle["manifest"].get("source_sha256", "unavailable"))[:6])
     st.caption("Subscription rates are associations in historical telephone campaigns, not effects.")
     tabs = st.tabs(["Customer profile", "Previous campaigns", "Recorded contact context"])
     with tabs[0]:
@@ -368,7 +509,9 @@ def outreach_shortlist(bundle: dict) -> None:
             capacity = st.number_input("Maximum records to select", min_value=0, value=100, step=1)
             fraction = .2
         else:
-            fraction = st.slider("Eligible pool capacity (%)", 0, 100, 20, 1) / 100
+            if "outreach_capacity" not in st.session_state:
+                st.session_state["outreach_capacity"] = 20
+            fraction = st.slider("Eligible pool capacity (%)", 0, 100, step=1, key="outreach_capacity") / 100
             capacity = None
     with right:
         use_cutoff = st.checkbox("Also require the frozen validation cutoff", value=False)
@@ -570,27 +713,40 @@ def main() -> None:
     st.set_page_config(page_title="Banking Engagement | Independent Analytics", page_icon="◈", layout="wide")
     st.markdown("""
         <style>
-        .block-container { padding-top: 2.2rem; max-width: 1440px; }
-        [data-testid="stSidebar"] { background: #f2f5f7; }
-        [data-testid="stMetric"] { border: 1px solid #dde5e9; border-radius: 10px;
-            background: #f8fafb; padding: 15px; }
-        [data-testid="stMetricLabel"] { color: #526271; }
-        h1 { letter-spacing: -1px; }
-        h2, h3 { letter-spacing: -.3px; }
+        .block-container { padding-top: 4rem; max-width: 1440px; }
+        [data-testid="stSidebar"] { background: #eee9df; border-right: 1px solid #dfd7ca; }
+        [data-testid="stMetric"] { border: 1px solid #e4dbcd; border-radius: 12px;
+            background: #fffdf8; padding: 18px; }
+        [data-testid="stMetricLabel"] { color: #666c6b; }
+        [data-testid="stMetricLabel"] p { white-space: normal !important;
+            overflow: visible !important; text-overflow: clip !important; }
+        [data-testid="stMetricValue"] { color: #19364a; }
+        [data-testid="stVerticalBlockBorderWrapper"] > div { border-color: #e4dbcd; }
+        h1 { color: #19364a; letter-spacing: -1.8px; line-height: 1.12; font-weight: 650; }
+        h2, h3, h4 { color: #19364a; letter-spacing: -.4px; }
+        .hub-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+            color: #aa4a2a; margin-bottom: .7rem; }
+        .hub-title { font-size: clamp(2.25rem, 3.5vw, 3.7rem); }
+        .hub-intro { font-size: 1.08rem; line-height: 1.65; color: #51616a;
+            max-width: 560px; margin: 1rem 0; }
+        .hub-rule { height: 1px; background: #e4dbcd; margin: 1.3rem 0; }
+        [data-testid="stImage"] img { border-radius: 16px; }
         </style>
     """, unsafe_allow_html=True)
     with st.sidebar:
         st.markdown("### ◈ Banking engagement")
         st.caption("Decision support, before the conversation")
-        page = st.radio("Workspace", PAGES)
+        page = st.radio("Workspace", PAGES, key="workspace")
         st.divider()
         st.markdown("**One business question**")
         st.write("With limited contact capacity, which prospects should the team review first?")
         st.caption("Python · SQLite · scikit-learn · Streamlit")
         st.markdown(f"[Dataset & provenance]({SOURCE})")
-    st.caption("INDEPENDENT BANKING ANALYTICS PROTOTYPE")
-    st.title("Customer engagement & deposit propensity")
-    context_note()
+    if page != "Engagement hub":
+        st.caption("INDEPENDENT BANKING ANALYTICS PROTOTYPE")
+        st.title("Customer engagement & deposit propensity")
+        st.button("← Back to engagement hub", on_click=navigate_to, args=("Engagement hub",), key="back_to_hub")
+        context_note()
     try:
         manifest_path = DEMO / "manifest.json"
         identity = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
@@ -600,7 +756,10 @@ def main() -> None:
         st.write("Build or restore the trusted demo artifacts using the repository README, then restart the application.")
         st.caption(f"Bundle check: {type(exc).__name__}. No model is trained on application startup.")
         st.stop()
-    if page == "Campaign overview":
+    if page == "Engagement hub":
+        engagement_hub(bundle, identity)
+        context_note()
+    elif page == "Campaign overview":
         campaign_overview(bundle, identity)
     elif page == "Model results":
         model_results(bundle, identity)
