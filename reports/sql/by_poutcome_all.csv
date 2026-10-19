@@ -1,0 +1,4 @@
+poutcome,observations,subscriptions,subscription_rate
+nonexistent,35563,3141,0.08832213255349661
+failure,4252,605,0.1422859830667921
+success,1373,894,0.651128914785142

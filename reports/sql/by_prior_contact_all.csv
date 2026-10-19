@@ -1,0 +1,3 @@
+prior_contact,observations,subscriptions,subscription_rate
+no previous contact (pdays=999),39673,3673,0.09258185667834548
+previously contacted (pdays!=999),1515,967,0.6382838283828383

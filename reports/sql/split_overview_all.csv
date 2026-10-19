@@ -1,0 +1,4 @@
+split,first_record_id,last_record_id,observations,subscriptions,subscription_rate
+train,1,28831,28831,1606,0.055703929797787106
+validation,28832,35009,6178,658,0.10650696018128844
+test,35010,41188,6179,2376,0.38452824081566594
