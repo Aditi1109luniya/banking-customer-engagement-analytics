@@ -714,14 +714,22 @@ def main() -> None:
     st.markdown("""
         <style>
         .block-container { padding-top: 4rem; max-width: 1440px; }
-        [data-testid="stSidebar"] { background: #eee9df; border-right: 1px solid #dfd7ca; }
-        [data-testid="stMetric"] { border: 1px solid #e4dbcd; border-radius: 12px;
-            background: #fffdf8; padding: 18px; }
-        [data-testid="stMetricLabel"] { color: #666c6b; }
+        [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #ffffff; }
+        [data-testid="stHeader"] { background: #ffffff; border-bottom: 1px solid #edf0f4; }
+        [data-testid="stSidebar"] { background: #ffffff; border-right: 1px solid #e3e8ee; }
+        [data-testid="stMetric"] { border: 1px solid #e3e8ee; border-radius: 8px;
+            background: #ffffff; padding: 18px; }
+        [data-testid="stMetricLabel"] { color: #64717d; }
         [data-testid="stMetricLabel"] p { white-space: normal !important;
             overflow: visible !important; text-overflow: clip !important; }
         [data-testid="stMetricValue"] { color: #19364a; }
-        [data-testid="stVerticalBlockBorderWrapper"] > div { border-color: #e4dbcd; }
+        [data-testid="stVerticalBlockBorderWrapper"] > div {
+            background: #ffffff; border-color: #e3e8ee; border-radius: 8px; }
+        [data-testid="stButton"] button { border-radius: 6px; font-weight: 600; }
+        [data-testid="stButton"] button[kind="secondary"] { background: #ffffff;
+            border-color: #d6dee7; color: #19364a; }
+        [data-testid="stButton"] button[kind="secondary"]:hover {
+            border-color: #b9512b; color: #b9512b; }
         h1 { color: #19364a; letter-spacing: -1.8px; line-height: 1.12; font-weight: 650; }
         h2, h3, h4 { color: #19364a; letter-spacing: -.4px; }
         .hub-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .14em;
@@ -729,7 +737,7 @@ def main() -> None:
         .hub-title { font-size: clamp(2.25rem, 3.5vw, 3.7rem); }
         .hub-intro { font-size: 1.08rem; line-height: 1.65; color: #51616a;
             max-width: 560px; margin: 1rem 0; }
-        .hub-rule { height: 1px; background: #e4dbcd; margin: 1.3rem 0; }
+        .hub-rule { height: 1px; background: #e3e8ee; margin: 1.3rem 0; }
         [data-testid="stImage"] img { border-radius: 16px; }
         </style>
     """, unsafe_allow_html=True)
