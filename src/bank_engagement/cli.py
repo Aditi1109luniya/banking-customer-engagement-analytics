@@ -44,9 +44,13 @@ def main():
             from bank_engagement.database import query_analysis
             folder = ROOT / "reports/sql"
             folder.mkdir(parents=True, exist_ok=True)
-            for name in ["overview", "by_job", "by_age_group", "by_poutcome",
+            names = ["overview", "by_job", "by_age_group", "by_poutcome",
                          "by_prior_contact", "by_month", "by_day_of_week", "by_contact",
-                         "by_education", "by_previous", "by_recency", "unknown_coverage"]:
+                         "by_education", "by_previous", "by_recency", "by_default",
+                         "by_housing", "by_loan", "unknown_coverage"]
+            if (ARTIFACTS / "selection.json").exists():
+                names += ["split_overview", "order_blocks", "score_deciles"]
+            for name in names:
                 query_analysis(name, split).to_csv(folder / f"{name}_{split}.csv", index=False)
             print(f"Saved SQL summaries for {split}", flush=True)
         if args.command in ["train", "run-all"]:
