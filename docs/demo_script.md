@@ -1,14 +1,18 @@
 # Five-minute interview demo
 
-Prepare with `python -m streamlit run app/streamlit_app.py` from the repository root after installation. Keep a local copy of `demo/` and the five slides so the presentation works without a network connection. Before an interview, run the app and inspect all four pages; do not retrain during the demonstration. Exact measured figures are in [the model report](../reports/model_report.md) and the application, rather than memorized from an old draft.
+Prepare with `python -m streamlit run app/streamlit_app.py` from the repository root after installation, or open the [live demo](https://bank-engagement-analyser.streamlit.app). Keep a local copy of `demo/` and the five slides so the presentation works without a network connection. Before an interview, inspect all five pages; do not retrain during the demonstration. Exact measured figures are in [the model report](../reports/model_report.md) and the application, rather than memorized from an old draft.
 
-## 0:00–0:35 — State the decision
+## 0:00–0:40 — Begin at the Engagement hub
 
 “I built an independent banking analytics prototype around one question: if a relationship team can contact only a limited number of prospects, which records should it review first for a term-deposit conversation? It combines Python, SQL, machine learning and a Streamlit workflow. Its source is historical Portuguese telephone campaigns, so it is not an ICICI customer model. Propensity supports the conversation; it does not decide product suitability.”
 
-## 0:35–1:20 — Campaign overview
+Start on the default **Engagement hub**. The hero artwork is illustrative and independent of ICICI Bank. Briefly point to **Campaign patterns**, **Capacity & capture**, and **Simulated outreach**. The first two previews use actual historical/model artifacts; the outreach donut uses clearly labelled simulated eligibility. Move **Preview contact capacity (%)** from 20% to another value and explain that the budget point and simulated selected count update while the official evaluation and frozen model stay fixed. **Open outreach shortlist** carries that chosen percentage into the shortlist. Click **Explore analysis →** or **Open campaign analysis** to continue. **Plan outreach →** jumps directly to the shortlist when time is short.
+
+## 0:40–1:20 — Campaign overview
 
 Open **Campaign overview**. Point to record count, subscriptions and subscription rate, always naming the selected scope. The development default is training history. Change a segment view to prior campaign outcome, then show its counts and denominator. Explain: “This is an association in the observed campaign records. It cannot establish that a channel, segment characteristic or extra call caused a subscription.”
+
+Use **← Back to engagement hub** to return to the welcome screen. The preview cards also offer **Open model results** and **Open outreach shortlist**; sidebar navigation remains available throughout.
 
 Mention `unknown` categories, the absence of unique customer IDs, and the fixed source order. Do not call the records 41,188 unique customers. Full-history descriptions become available only after model and policy freeze.
 

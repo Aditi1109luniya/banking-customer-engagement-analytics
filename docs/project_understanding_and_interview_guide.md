@@ -7,7 +7,7 @@
 
 `ruff check .` and `pytest -q` passed in the delivery environment.
 
-[Public source repository](https://github.com/Aditi1109luniya/banking-customer-engagement-analytics)
+[Public source repository](https://github.com/Aditi1109luniya/banking-customer-engagement-analytics) · [Live interactive demo](https://bank-engagement-analyser.streamlit.app)
 
 The validation-selected **Random Forest** captured **632 of 2,376** historical test subscriptions in the highest-scored **1,236 of 6,179 records**. Test Precision@20% was **51.13%**, Lift@20% **1.330×**, and Recall@20% **26.60%**. These are offline historical ranking results, not incremental sales.
 
@@ -67,15 +67,6 @@ The rest of this guide teaches the reasoning and includes explicitly hypothetica
 <!-- END VERIFIED RESULTS -->
 
 
-
-
-
-
-
-
-
-
-
 ## Project understanding and ICICI interview guide
 
 **Status: implemented and evaluated prototype.** Read the verified results section above first. Original worked arithmetic examples below remain explicitly hypothetical. Use [the implementation plan](../plan.md) for design intent and the [README](../README.md) for runnable commands.
@@ -98,7 +89,7 @@ This guide explains what the system does, how data moves through it, why the tec
 - [9. Metrics: what each number tells you](#9-metrics-what-each-number-tells-you)
 - [10. Capacity, thresholds, and engagement policy](#10-capacity-thresholds-and-engagement-policy)
 - [11. Explaining patterns without overstating them](#11-explaining-patterns-without-overstating-them)
-- [12. What the four dashboard pages do](#12-what-the-four-dashboard-pages-do)
+- [12. What the five dashboard pages do](#12-what-the-five-dashboard-pages-do)
 - [13. How to know the implementation is trustworthy](#13-how-to-know-the-implementation-is-trustworthy)
 - [14. Limitations and sensible next steps](#14-limitations-and-sensible-next-steps)
 - [15. Interview pitches](#15-interview-pitches)
@@ -377,20 +368,25 @@ A global importance chart does not explain why one particular record received it
 
 Audit performance and selection patterns across sufficiently supported groups, display counts, and discuss uncertainty. A low observed subscription rate does not justify unfair exclusion. The dataset is too limited to establish comprehensive fairness or legal compliance. Removing one demographic field also does not eliminate its proxies.
 
-## 12. What the four dashboard pages do
+## 12. What the five dashboard pages do
+
+The default **Engagement hub** is a graphical product welcome. It introduces the business question with an illustration and interactive chart previews, then provides clear routes to the analytical tools. The first visit begins with the decision and visual evidence rather than a raw records table. Hero artwork is illustrative and independent of ICICI Bank. All chart values come from the actual trusted public-data/model bundle, while eligibility is explicitly simulated.
 
 | Page | What the user sees | What you explain in the demo |
 |---|---|---|
-| Campaign Overview | Data provenance, record counts, target distribution, SQL segment summaries | These are historical associations with visible denominators |
-| Model Results | Split sizes, feature boundary, baseline/LR/RF comparison, curves, budget trade-off, limitations | Selection used validation; the latest slice was held out |
-| Outreach Shortlist | Capacity, simulated policy controls, eligible/suppressed counts, sorted records, export | Policy is applied before capacity; the score supports prioritization |
-| Scoring Sandbox | Single-record input or schema-validated upload using the saved pipeline | New inputs reuse the fitted transformations; no training occurs here |
+| Engagement hub | Welcome illustration, campaign-pattern bars, test capacity/capture curve, simulated outreach donut, budget slider and navigation buttons | A quick route from the business question to real historical evidence; simulation stays separate |
+| Campaign overview | Data provenance, record counts, target distribution and SQL segment summaries | These are historical associations with visible denominators |
+| Model results | Split sizes, feature boundary, baseline/LR/RF comparison, curves, budget trade-off and limitations | Selection used validation; the later slice was held out |
+| Outreach shortlist | Capacity, simulated policy controls, eligible/suppressed counts, sorted records and export | Policy is applied before capacity; the score supports prioritization |
+| Scoring sandbox | Synthetic single-record input or schema-validated upload using the saved pipeline | New inputs reuse the fitted transformations; no training occurs here |
 
-All four pages should identify the historical public-data prototype and model run. A results page must show genuine stored evaluation artifacts; if those files are missing, show a helpful setup message rather than fabricated numbers. Loading a saved model should verify compatible features and package metadata. Only load trusted local serialized artifacts: model files can execute code during deserialization.
+The hub hero buttons are **Explore analysis →**, which opens Campaign overview, and **Plan outreach →**, which opens Outreach shortlist. The three previews are **Campaign patterns** (full-history previous-outcome subscription rates), **Capacity & capture** (the frozen champion's test cumulative-gains curve, random reference and budget point), and **Simulated outreach** (test-pool eligible/suppressed shares and selected count). Their buttons are **Open campaign analysis**, **Open model results**, and **Open outreach shortlist**. **Preview contact capacity (%)** spans 1–50%, starting at 20%; it changes the preview budget point and simulated count without altering the official frozen metrics or model. **Open outreach shortlist** carries that chosen percentage into the shortlist control. Analytical pages return through **← Back to engagement hub**. Full-history descriptions are appropriate here because selection is already frozen; development-stage analysis remains training-only.
 
-The sandbox model receives only the approved raw features, plus a separate optional simulated policy input to the eligibility layer. A single-record form assigns a synthetic session ID; batch CSVs require a unique record_id. Age, previous, and pdays must be finite integer-valued inputs with the documented bounds. Known excluded source columns such as `duration` or `y` are ignored with a warning and never forwarded to the estimator; unexpected or incompatible fields cause a schema error. Do not expose historical targets in an operational-style shortlist export. A clearly separated historical replay may compare predictions with outcomes for teaching and evaluation.
+All five pages identify the historical public-data prototype and model run. Results come from stored evaluation artifacts; a missing/incompatible bundle produces a helpful setup message rather than fabricated numbers. Loading the saved pipeline verifies hashes and compatible package metadata. Only trusted local serialized artifacts are loaded: model files can execute code during deserialization.
 
-Streamlit is sufficient for both demonstration and scoring. Local execution is the default; optional public hosting comes after artifact review and an explicit repository owner/visibility decision. The prototype needs no real bank integration or customer-contact service.
+The sandbox model receives only approved raw features. Separate optional simulated policy inputs go to the eligibility layer. A single-record form assigns a synthetic session ID; batch CSVs require unique record IDs. Age, previous and pdays must be finite integer-valued inputs with documented bounds. Known excluded source columns such as duration or y are ignored with warnings and never forwarded to the estimator; unexpected or malformed fields reject the batch. Operational-style exports omit historical targets and personal contact details. A clearly labelled historical replay supports teaching and evaluation.
+
+Streamlit delivers the welcome, analytics and scoring in one application. A public demo is available through the verified link in the results section; local execution and the trusted saved bundle provide the interview fallback. The prototype needs no live bank integration or customer-contact service.
 
 ## 13. How to know the implementation is trustworthy
 
@@ -447,8 +443,8 @@ Walk through one record: source row → surrogate ID → split → approved feat
 
 | Time | Action | Key sentence |
 |---|---|---|
-| 0:00–0:40 | State problem and source boundary | “The constraint is contact capacity; this is public historical data.” |
-| 0:40–1:25 | Show overview and one SQL segment chart | “I show the denominator because rates from tiny groups are unstable.” |
+| 0:00–0:40 | Begin at Engagement hub: state the problem, inspect chart previews and adjust preview capacity | “These charts use frozen historical artifacts; eligibility is simulated.” |
+| 0:40–1:25 | Click Explore analysis → or Open campaign analysis; show one SQL segment chart | “I show the denominator because rates from tiny groups are unstable.” |
 | 1:25–2:25 | Show splits, feature exclusions, comparison, and budget curve | “The winner was selected on validation, with a frozen chronological test.” |
 | 2:25–3:35 | Set capacity and inspect shortlist | “This is a ranking workflow; a simulated opt-out is suppressed first.” |
 | 3:35–4:20 | Score a synthetic sandbox record | “The saved pipeline applies the same transformations used in training.” |
@@ -601,11 +597,8 @@ This evidence sheet is generated from the completed artifact bundle. Check count
 | Quality checks | `ruff check .` and `pytest -q` passed in the delivery environment. | Actual shell/CI check output |
 | Reproduction | Locked install and run-all documented | README; model/source hashes |
 | Repository | https://github.com/Aditi1109luniya/banking-customer-engagement-analytics | Verified link in README when published |
-| Hosted demo | External hosting pending; local app available | Verified live link when deployed |
+| Hosted demo | https://bank-engagement-analyser.streamlit.app | Verified live link when deployed |
 <!-- END IMPLEMENTATION EVIDENCE -->
-
-
-
 
 ## 20. Resume language after completion
 
