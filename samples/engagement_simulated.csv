@@ -1,0 +1,9 @@
+record_id,simulated_opt_out,simulated_contact_permission,simulated_recent_contact,provenance
+DEMO-1,False,True,False,simulated
+DEMO-2,False,True,False,simulated
+DEMO-3,False,True,False,simulated
+DEMO-4,False,True,False,simulated
+DEMO-5,False,True,False,simulated
+DEMO-6,False,True,False,simulated
+DEMO-7,False,False,False,simulated
+DEMO-8,False,True,False,simulated

@@ -1,0 +1,9 @@
+record_id,age,job,marital,education,default,housing,loan,previous,pdays,poutcome
+DEMO-1,45,blue-collar,single,high.school,no,no,no,0,999,nonexistent
+DEMO-2,31,blue-collar,married,university.degree,no,yes,no,0,999,nonexistent
+DEMO-3,25,blue-collar,single,basic.9y,no,yes,no,0,999,nonexistent
+DEMO-4,55,management,married,basic.6y,unknown,no,yes,0,999,nonexistent
+DEMO-5,39,self-employed,married,basic.9y,no,yes,no,0,999,nonexistent
+DEMO-6,55,management,married,basic.6y,unknown,yes,no,0,999,nonexistent
+DEMO-7,51,admin.,married,high.school,no,no,yes,1,999,failure
+DEMO-8,50,services,married,high.school,no,no,no,0,999,nonexistent
