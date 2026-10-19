@@ -196,12 +196,15 @@ Test ROC-AUC: **{number(champion['roc_auc'])}** · trapezoidal PR-AUC: **{number
 
 | Workspace | Useful behavior |
 |---|---|
+| Engagement hub | Default graphical welcome with an illustration, interactive previews from actual campaign/test artifacts, and direct navigation into analysis or outreach. |
 | Campaign overview | SQL-backed counts, subscription rates and segments with denominators; training history is the development default. |
 | Model results | Validation/test comparison, precision/recall/lift at a budget, gains curves, reliability, drift and descriptive group review. |
 | Outreach shortlist | Historical replay, separate simulated suppression, eligible-pool budget controls, factual context, selected CSV and context JSON downloads. |
 | Scoring sandbox | Synthetic one-record form and public/synthetic batch scoring with validation, unseen-category warnings and no upload persistence. |
 
 The app loads a checksum-verified demo bundle; it does not train on startup. A simulated opt-out suppresses selection regardless of score. Neither the model nor simulation sends messages or contacts anyone.
+
+The first screen is the **Engagement hub**. Its **Explore analysis →** and **Plan outreach →** buttons open the detailed workspaces. Three chart previews show historical campaign patterns, the frozen champion's test capacity/capture curve, and separately simulated outreach eligibility. The **Preview contact capacity (%)** slider changes the displayed budget point and simulated selected count without changing official metrics or the frozen model; **Open outreach shortlist** carries that percentage into the shortlist. Detailed pages provide **← Back to engagement hub** navigation; a raw record table is not the initial product experience. Hero artwork is illustrative and independent of ICICI Bank.
 
 {check_status}
 
@@ -413,7 +416,9 @@ Reproduce from the README's Python 3.11 locked environment using `fetch-data`, `
 | Model code fingerprint | `{selection['code_fingerprint']}` |
 | Champion artifact SHA-256 | `{selection['model_hashes']['champion.joblib']}` |
 | Seed | 42 |
-| Training Git commit | `{selection.get('code_commit_at_training') or 'not yet committed at training; code fingerprint above identifies model source'}` |
+| Local training commit | `{selection.get('code_commit_at_training') or 'not yet committed at training; code fingerprint above identifies model source'}` |
+
+The training commit was captured in the local authoring checkout. It is not asserted to exist in the public GitHub history or to identify the published release. The source/split hashes, modeling-code fingerprint and serialized-model checksum above identify the exact experimental inputs and outputs.
 
 Dependency versions: `{json.dumps(selection['versions'], sort_keys=True)}`. Timestamps and commit metadata may differ in a fresh disclosed run; model ID incorporates data, configuration, relevant code and dependency versions. Prediction reproduction should be checked with the locked environment and verified input hashes; cross-platform numerical differences are possible. Serialization scores are verified on a fixed sample within 1e-12 by the project checks.
 
@@ -435,7 +440,8 @@ Data sources and credit: [UCI Bank Marketing](https://archive.ics.uci.edu/datase
         guide_path.write_text(source.read_text())
     guide = guide_path.read_text()
     if START in guide and END in guide:
-        guide = guide[:guide.index(START)] + guide[guide.index(END) + len(END):]
+        guide = (guide[:guide.index(START)].rstrip() + "\n\n"
+                 + guide[guide.index(END) + len(END):].lstrip("\n"))
     original_status = (
         "**Status: design and learning guide. The project has not yet been implemented or "
         "evaluated.** Commands, screenshots, trained artifacts, and measured results must be "
@@ -452,8 +458,10 @@ Data sources and credit: [UCI Bank Marketing](https://archive.ics.uci.edu/datase
     guide = guide.replace("[Implementation plan](plan.md)", "[Implementation plan](../plan.md)")
     guide = guide.replace("[plan.md](plan.md)", "[plan.md](../plan.md)")
     guide = guide.replace("what the proposed system does", "what the system does")
-    guide = guide.replace("What the four dashboard pages should do", "What the four dashboard pages do")
-    guide = guide.replace("what-the-four-dashboard-pages-should-do", "what-the-four-dashboard-pages-do")
+    for heading in ["What the four dashboard pages should do", "What the four dashboard pages do"]:
+        guide = guide.replace(heading, "What the five dashboard pages do")
+    for anchor in ["what-the-four-dashboard-pages-should-do", "what-the-four-dashboard-pages-do"]:
+        guide = guide.replace(anchor, "what-the-five-dashboard-pages-do")
     guide = guide.replace("Before implementation, mark this slide “results pending.”",
                           "The delivered slides use the frozen metrics.")
     guide = guide.replace("After implementation, name an actual decision and evidence.",
@@ -478,6 +486,36 @@ Data sources and credit: [UCI Bank Marketing](https://archive.ics.uci.edu/datase
         "Replace future tense only when the corresponding evidence exists.",
         "These answer structures explain the completed prototype. Support each claim with "
         "the actual evidence in the verified section above and the repository.")
+    section_start = guide.find("## 12. ")
+    section_end = guide.find("\n## 13. ", section_start)
+    if section_start >= 0 and section_end > section_start:
+        dashboard_section = """## 12. What the five dashboard pages do
+
+The default **Engagement hub** is a graphical product welcome. It introduces the business question with an illustration and interactive chart previews, then provides clear routes to the analytical tools. The first visit begins with the decision and visual evidence rather than a raw records table. Hero artwork is illustrative and independent of ICICI Bank. All chart values come from the actual trusted public-data/model bundle, while eligibility is explicitly simulated.
+
+| Page | What the user sees | What you explain in the demo |
+|---|---|---|
+| Engagement hub | Welcome illustration, campaign-pattern bars, test capacity/capture curve, simulated outreach donut, budget slider and navigation buttons | A quick route from the business question to real historical evidence; simulation stays separate |
+| Campaign overview | Data provenance, record counts, target distribution and SQL segment summaries | These are historical associations with visible denominators |
+| Model results | Split sizes, feature boundary, baseline/LR/RF comparison, curves, budget trade-off and limitations | Selection used validation; the later slice was held out |
+| Outreach shortlist | Capacity, simulated policy controls, eligible/suppressed counts, sorted records and export | Policy is applied before capacity; the score supports prioritization |
+| Scoring sandbox | Synthetic single-record input or schema-validated upload using the saved pipeline | New inputs reuse the fitted transformations; no training occurs here |
+
+The hub hero buttons are **Explore analysis →**, which opens Campaign overview, and **Plan outreach →**, which opens Outreach shortlist. The three previews are **Campaign patterns** (full-history previous-outcome subscription rates), **Capacity & capture** (the frozen champion's test cumulative-gains curve, random reference and budget point), and **Simulated outreach** (test-pool eligible/suppressed shares and selected count). Their buttons are **Open campaign analysis**, **Open model results**, and **Open outreach shortlist**. **Preview contact capacity (%)** spans 1–50%, starting at 20%; it changes the preview budget point and simulated count without altering the official frozen metrics or model. **Open outreach shortlist** carries that chosen percentage into the shortlist control. Analytical pages return through **← Back to engagement hub**. Full-history descriptions are appropriate here because selection is already frozen; development-stage analysis remains training-only.
+
+All five pages identify the historical public-data prototype and model run. Results come from stored evaluation artifacts; a missing/incompatible bundle produces a helpful setup message rather than fabricated numbers. Loading the saved pipeline verifies hashes and compatible package metadata. Only trusted local serialized artifacts are loaded: model files can execute code during deserialization.
+
+The sandbox model receives only approved raw features. Separate optional simulated policy inputs go to the eligibility layer. A single-record form assigns a synthetic session ID; batch CSVs require unique record IDs. Age, previous and pdays must be finite integer-valued inputs with documented bounds. Known excluded source columns such as duration or y are ignored with warnings and never forwarded to the estimator; unexpected or malformed fields reject the batch. Operational-style exports omit historical targets and personal contact details. A clearly labelled historical replay supports teaching and evaluation.
+
+Streamlit delivers the welcome, analytics and scoring in one application. A public demo is available through the verified link in the results section; local execution and the trusted saved bundle provide the interview fallback. The prototype needs no live bank integration or customer-contact service.
+"""
+        guide = guide[:section_start] + dashboard_section + guide[section_end:]
+    guide = guide.replace(
+        '| 0:00–0:40 | State problem and source boundary | “The constraint is contact capacity; this is public historical data.” |',
+        '| 0:00–0:40 | Begin at Engagement hub: state the problem, inspect chart previews and adjust preview capacity | “These charts use frozen historical artifacts; eligibility is simulated.” |')
+    guide = guide.replace(
+        '| 0:40–1:25 | Show overview and one SQL segment chart | “I show the denominator because rates from tiny groups are unstable.” |',
+        '| 0:40–1:25 | Click Explore analysis → or Open campaign analysis; show one SQL segment chart | “I show the denominator because rates from tiny groups are unstable.” |')
     evidence_start = guide.find("After implementation, complete this evidence sheet")
     evidence_end = guide.find("\n## 20.", evidence_start)
     if EVIDENCE_START in guide and EVIDENCE_END in guide:
@@ -502,8 +540,8 @@ Data sources and credit: [UCI Bank Marketing](https://archive.ics.uci.edu/datase
         guide = guide[:evidence_start] + (
             EVIDENCE_START + "\nThis evidence sheet is generated from the completed artifact bundle. "
             "Check counts and figures against these files before rehearsal.\n\n" + evidence
-            + "\n" + EVIDENCE_END + "\n"
-        ) + guide[evidence_end:]
+            + "\n" + EVIDENCE_END + "\n\n"
+        ) + guide[evidence_end:].lstrip("\n")
     guide = guide.replace(
         "selected **[model]** achieved **[measured Precision@20%]**, "
         "**[measured Recall@20%]**, and **[measured Lift@20%]**",
