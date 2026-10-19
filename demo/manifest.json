@@ -1,0 +1,199 @@
+{
+  "model_id": "rf-d8-l10-32e674d224",
+  "champion_id": "rf-d8-l10-32e674d224",
+  "champion_family": "Random Forest",
+  "version": "1.0.0",
+  "positive_class": 1,
+  "features": [
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "previous",
+    "pdays",
+    "poutcome"
+  ],
+  "excluded": [
+    "duration",
+    "contact",
+    "month",
+    "day_of_week",
+    "campaign",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed"
+  ],
+  "seed": 42,
+  "default_capacity_fraction": 0.2,
+  "tie_rule": "descending score; SHA256(\"42:<record_id>\") ascending; ID ascending",
+  "validation_cutoff": 0.0679219814659131,
+  "validation_selection": {
+    "model_id": "rf-d8-l10-32e674d224",
+    "family": "Random Forest",
+    "split": "validation",
+    "params": {
+      "n_estimators": 300,
+      "max_depth": 8,
+      "min_samples_leaf": 10,
+      "max_features": "sqrt",
+      "class_weight": null,
+      "random_state": 42,
+      "n_jobs": 2
+    },
+    "n": 6178,
+    "positives": 658,
+    "k": 1236,
+    "tp_k": 231,
+    "base_rate": 0.10650696018128844,
+    "coverage": 0.20006474587245063,
+    "precision_at_20": 0.18689320388349515,
+    "recall_at_20": 0.35106382978723405,
+    "lift_at_20": 1.7547510844866763,
+    "roc_auc": 0.6205878870974847,
+    "pr_auc": 0.18962717872054763,
+    "ap": 0.19073654946395524,
+    "brier": 0.09487613909464508
+  },
+  "finalists": {
+    "Logistic Regression": {
+      "model_id": "lr-c0.1-32e674d224",
+      "family": "Logistic Regression",
+      "split": "validation",
+      "params": {
+        "C": 0.1,
+        "max_iter": 2000,
+        "solver": "lbfgs",
+        "class_weight": null
+      },
+      "n": 6178,
+      "positives": 658,
+      "k": 1236,
+      "tp_k": 212,
+      "base_rate": 0.10650696018128844,
+      "coverage": 0.20006474587245063,
+      "precision_at_20": 0.1715210355987055,
+      "recall_at_20": 0.3221884498480243,
+      "lift_at_20": 1.6104209087063868,
+      "roc_auc": 0.6001248568345007,
+      "pr_auc": 0.16689693379913587,
+      "ap": 0.16820295284223108,
+      "brier": 0.09588617354386673
+    },
+    "Random Forest": {
+      "model_id": "rf-d8-l10-32e674d224",
+      "family": "Random Forest",
+      "split": "validation",
+      "params": {
+        "n_estimators": 300,
+        "max_depth": 8,
+        "min_samples_leaf": 10,
+        "max_features": "sqrt",
+        "class_weight": null,
+        "random_state": 42,
+        "n_jobs": 2
+      },
+      "n": 6178,
+      "positives": 658,
+      "k": 1236,
+      "tp_k": 231,
+      "base_rate": 0.10650696018128844,
+      "coverage": 0.20006474587245063,
+      "precision_at_20": 0.18689320388349515,
+      "recall_at_20": 0.35106382978723405,
+      "lift_at_20": 1.7547510844866763,
+      "roc_auc": 0.6205878870974847,
+      "pr_auc": 0.18962717872054763,
+      "ap": 0.19073654946395524,
+      "brier": 0.09487613909464508
+    },
+    "Prior baseline": {
+      "model_id": "prior-32e674d224",
+      "family": "Prior baseline",
+      "split": "validation",
+      "params": {
+        "strategy": "prior"
+      },
+      "n": 6178,
+      "positives": 658,
+      "k": 1236,
+      "tp_k": 137,
+      "base_rate": 0.10650696018128844,
+      "coverage": 0.20006474587245063,
+      "precision_at_20": 0.11084142394822007,
+      "recall_at_20": 0.20820668693009117,
+      "lift_at_20": 1.0406965306262972,
+      "roc_auc": 0.5,
+      "pr_auc": 0.5532534800906442,
+      "ap": 0.10650696018128844,
+      "brier": 0.09774417551037684
+    }
+  },
+  "split_counts": {
+    "train": 28831,
+    "test": 6179,
+    "validation": 6178
+  },
+  "split_ranges": {
+    "train": [
+      1,
+      28831
+    ],
+    "validation": [
+      28832,
+      35009
+    ],
+    "test": [
+      35010,
+      41188
+    ]
+  },
+  "source_sha256": "74adfc578bf77a7ff4bb1ba4a9f8709d9e3c6907342959c2c8416847e0afb4d8",
+  "split_sha256": "6d337475d5e0346885ea043a63b728a913a0da80f78dd82c80bd6f2255a10853",
+  "code_fingerprint": "78e20897d0dd46e6a7ac4bd695c5bf33007c2cd6ed670ea5639f6a4554bcacb7",
+  "config": {
+    "seed": 42,
+    "outreach_fraction": 0.2,
+    "source_rows": 41188,
+    "train_rows": 28831,
+    "validation_rows": 6178,
+    "test_rows": 6179,
+    "forest_estimators": 300,
+    "forest_jobs": 2,
+    "permutation_repeats": 10
+  },
+  "versions": {
+    "scikit-learn": "1.7.2",
+    "numpy": "2.4.6",
+    "pandas": "2.3.3",
+    "scipy": "1.17.1",
+    "joblib": "1.6.0",
+    "streamlit": "1.66.0"
+  },
+  "code_commit_at_training": "f8b37b3663039a13dd17523d6c890e3ff1be5e19",
+  "created_at": "2026-10-19T14:59:50.284904+00:00",
+  "model_hashes": {
+    "champion.joblib": "5bbd52c9b03866444bdecfe0f4440f79e301758c3ac279ec7f2dcf00f0ce6cb6",
+    "Logistic_Regression.joblib": "93c0c923ca8f341cc088e8c579f8b2ee4d2da079c95a7b597b1834462090a567",
+    "Random_Forest.joblib": "5bbd52c9b03866444bdecfe0f4440f79e301758c3ac279ec7f2dcf00f0ce6cb6",
+    "Prior_baseline.joblib": "7e96197346da1086149cbedaee8bc47302ff3ec99b1bf3f52034c2e1fcb89c95"
+  },
+  "selection_rule": "validation Precision@20%, then AP, then LR, then candidate ID",
+  "status": "frozen_before_test",
+  "bundle_hashes": {
+    "champion.joblib": "5bbd52c9b03866444bdecfe0f4440f79e301758c3ac279ec7f2dcf00f0ce6cb6",
+    "metrics.json": "17b493bf177ae9bbb700bac38de5e4a7fac207841ab174beee0d6b8f743a3d93",
+    "test_replay.csv": "417894d02166e972dbba71116c3918b2200673daebf903613abfcc82fb0058b1",
+    "importance.csv": "1121609cad3d9f91892192de9cf718e2e3555000239a8d4786c925dd810dc04c",
+    "group_audit.csv": "985e48e003e0e7cce923eeb154f2b44f30dd0408b2a708d9eef83b0b3852c478",
+    "budget_curve.csv": "d9ffe60be28cdb9b93c3855b35cfa4765b25108235b14e92e513cb905d7e1d81",
+    "split_summary.json": "3e658c246bef692ba6cc6a8acd70768cb11c1948bf6e1dc854762c5a428184db",
+    "evaluation_manifest.json": "1a5ae57ee40b8221af7e6ca35df5e0d8d402083c5087834068341244b9cb3d89",
+    "candidates.json": "4e47f1c60523687221d2d773e457c98d5840c226d4b2b52a4a63b81168416e17",
+    "bank_marketing.sqlite.gz": "597ffd255a159bced50befa5394b7852d7958348444ce1fca11cdcea770dcddb"
+  }
+}

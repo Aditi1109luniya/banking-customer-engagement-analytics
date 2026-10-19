@@ -1,0 +1,20 @@
+[
+  {
+    "split": "train",
+    "n": 28831,
+    "positives": 1606,
+    "base_rate": 0.055703929797787106
+  },
+  {
+    "split": "validation",
+    "n": 6178,
+    "positives": 658,
+    "base_rate": 0.10650696018128844
+  },
+  {
+    "split": "test",
+    "n": 6179,
+    "positives": 2376,
+    "base_rate": 0.38452824081566594
+  }
+]
