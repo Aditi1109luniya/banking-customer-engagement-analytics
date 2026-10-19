@@ -152,7 +152,9 @@ Reproduce from the README's Python 3.11 locked environment using `fetch-data`, `
 | Model code fingerprint | `78e20897d0dd46e6a7ac4bd695c5bf33007c2cd6ed670ea5639f6a4554bcacb7` |
 | Champion artifact SHA-256 | `5bbd52c9b03866444bdecfe0f4440f79e301758c3ac279ec7f2dcf00f0ce6cb6` |
 | Seed | 42 |
-| Training Git commit | `f8b37b3663039a13dd17523d6c890e3ff1be5e19` |
+| Local training commit | `f8b37b3663039a13dd17523d6c890e3ff1be5e19` |
+
+The training commit was captured in the local authoring checkout. It is not asserted to exist in the public GitHub history or to identify the published release. The source/split hashes, modeling-code fingerprint and serialized-model checksum above identify the exact experimental inputs and outputs.
 
 Dependency versions: `{"joblib": "1.6.0", "numpy": "2.4.6", "pandas": "2.3.3", "scikit-learn": "1.7.2", "scipy": "1.17.1", "streamlit": "1.66.0"}`. Timestamps and commit metadata may differ in a fresh disclosed run; model ID incorporates data, configuration, relevant code and dependency versions. Prediction reproduction should be checked with the locked environment and verified input hashes; cross-platform numerical differences are possible. Serialization scores are verified on a fixed sample within 1e-12 by the project checks.
 
