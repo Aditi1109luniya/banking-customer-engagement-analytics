@@ -82,6 +82,7 @@ def test_hub_is_default_and_capacity_preview_is_exploratory():
     at = demo_app()
     assert not at.exception
     assert at.sidebar.radio[0].value == "Engagement hub"
+    assert not at.dataframe
     official_lift = next(m.value for m in at.metric if m.label == "Test lift @ 20%")
     next(s for s in at.slider if s.label == "Preview contact capacity (%)").set_value(35).run()
     assert not at.exception
@@ -105,3 +106,57 @@ def test_hub_navigation_and_return(button, destination):
     next(b for b in at.button if b.label == "← Back to engagement hub").click().run()
     assert not at.exception
     assert at.sidebar.radio[0].value == "Engagement hub"
+
+
+@pytest.mark.parametrize("slug,page", [
+    ("home", "Engagement hub"), ("analysis", "Campaign overview"),
+    ("model", "Model results"), ("outreach", "Outreach shortlist"),
+    ("score", "Scoring sandbox"),
+])
+def test_shared_page_link_opens_the_requested_workspace(slug, page):
+    at = AppTest.from_file(str(APP), default_timeout=60)
+    at.query_params["view"] = slug
+    at.run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == page
+    assert at.pills[0].value == page
+
+
+def test_unknown_page_link_falls_back_to_welcome():
+    at = AppTest.from_file(str(APP), default_timeout=60)
+    at.query_params["view"] = "unrecognised-page"
+    at.run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Engagement hub"
+
+
+def test_changed_page_url_updates_an_existing_session():
+    at = demo_app()
+    at.query_params["view"] = "model"
+    at.run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Model results"
+    assert at.pills[0].value == "Model results"
+
+
+def test_visible_navigation_sidebar_and_page_url_stay_in_step():
+    at = demo_app()
+    at.pills[0].set_value("Model results").run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Model results"
+    assert at.query_params["view"] == "model"
+    at.sidebar.radio[0].set_value("Scoring sandbox").run()
+    assert not at.exception
+    assert at.pills[0].value == "Scoring sandbox"
+    assert at.query_params["view"] == "score"
+
+
+def test_hero_outreach_button_keeps_the_preview_capacity():
+    at = demo_app()
+    next(s for s in at.slider if s.label == "Preview contact capacity (%)").set_value(35).run()
+    next(b for b in at.button if b.label == "Plan outreach →").click().run()
+    assert not at.exception
+    assert at.sidebar.radio[0].value == "Outreach shortlist"
+    assert at.pills[0].value == "Outreach shortlist"
+    assert at.query_params["view"] == "outreach"
+    assert next(s.value for s in at.slider if s.label == "Eligible pool capacity (%)") == 35
